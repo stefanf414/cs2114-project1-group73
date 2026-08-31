@@ -2,3 +2,4 @@
 Restaurant suite for waitlists and reservations
 Stefan Fernandez edit here
 Megha Dabbeeru edited here
+Noah Bierman
