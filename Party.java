@@ -1,6 +1,7 @@
+package mainClass;
 // -------------------------------------------------------------------------
 /**
- * This is the party class, where each resturant party gives name, size, and
+ * This is the party class, where each restaurant party gives name, size, and
  * table preference
  * 
  * @author Samuel
@@ -25,7 +26,7 @@ public class Party
      *            How many people are in the party
      */
     // ~ Constructors ..........................................................
-    Party(String name, int arrivalTime, int size)
+    public Party(String name, int arrivalTime, int size)
     {
         this.name = name;
         this.arrivalTime = arrivalTime;

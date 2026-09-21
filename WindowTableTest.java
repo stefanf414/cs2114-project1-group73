@@ -6,9 +6,13 @@
  */
 
 package mainClass;
-import student.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-public class WindowTableTest extends TestCase
+public class WindowTableTest 
 {
     private WindowTable window;
 
