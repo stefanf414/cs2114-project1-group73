@@ -2,121 +2,367 @@ package mainClass;
 
 import java.util.*;
 
-public class Main
-{
-    // ~ Fields ................................................................
-    private static String partyName;
-    private static int amountInParty;
-    private static String tableType;
-    private static int arrivalTime;
+/**
+ * Main application class handling continuous interactive menu operations,
+ * separate status trackers for Booths, Window, and Regular tables,
+ * party removal, and dynamic wait time calculations based on open tables.
+ *
+ * @author Megha Dabbeeru
+ * @version 2026.09.20
+ */
+public class Main {
+    // ~ Constants .............................................................
 
-    // ~ Constructors ..........................................................
-    public static void main(String[] args)
-    {
+    /** Maximum allowed seating capacity per individual party. */
+    private static final int MAX_PARTY_SIZE = 8;
 
+    /** Total number of booth tables in the layout. */
+    private static final int MAX_BOOTHS = 5;
+
+    /** Total number of window tables in the layout. */
+    private static final int MAX_WINDOW_TABLES = 5;
+
+    /** Total number of standard/regular tables in the layout. */
+    private static final int MAX_REGULAR_TABLES = 5;
+
+    // ~ Main Method ...........................................................
+
+    /**
+     * Program entry point. Executes the system menu loop and manages options.
+     *
+     * @param args
+     *            command line arguments (unused)
+     */
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        
         Waitlist waitlist = new Waitlist();
+        TableManager tableManager = initializeRestaurantLayout();
 
-        // setting the name of the party
-        System.out.println(
-            "Please enter the name of the party (individual making the reservation): ");
-        partyName = scanner.nextLine();
-        System.out.println("Party Name: " + partyName);
+        boolean running = true;
 
-        // checking and setting the amount in the party
-        System.out.println("Please enter the amount of people in the party: ");
+        while (running) {
+            System.out.println("\n===== RESTAURANT RESERVATION SYSTEM =====");
+            displayTableStatus(tableManager);
+            System.out.println("1. Add a Party to Waitlist");
+            System.out.println("2. View Waitlist");
+            System.out.println("3. Seat Next Party");
+            System.out.println("4. Remove/Cancel Party from Waitlist");
+            System.out.println("5. Check Party Wait Time");
+            System.out.println("6. Exit");
+            System.out.print("Select an option (1-6): ");
 
-        while (!scanner.hasNextInt())
-        {
-            System.out.println("Invalid type, please enter a whole number:");
-            scanner.nextLine();
-        }
-
-        amountInParty = scanner.nextInt();
-        scanner.nextLine();
-        System.out.println("Amount in Party: " + amountInParty);
-
-        // checking table type
-        System.out.println("Please enter the table type: ");
-        String enteredVal = "";
-        String[] acceptedVals =
-            { "booth", "Booth", "window", "Window", "regular", "Regular" };
-        boolean correctTypeFound = false;
-        while (!correctTypeFound)
-        {
-            enteredVal = scanner.nextLine();
-            if (Arrays.asList(acceptedVals).contains(enteredVal))
-            {
-                correctTypeFound = true;
-                tableType = enteredVal;
-                break;
-            }
-            System.out.println(
-                "Please enter the table type from the following options:"
-                    + "[\"booth\", \"Booth\", \"window\", \"Window\", "
-                    + "\"regular\", " + "\"Regular\"] : ");
-        }
-        System.out.println("table type:  " + tableType);
-
-        // checking and setting the time
-        while (true)
-        {
-            System.out.println(
-                "Please enter the arrival time in military time,"
-                    + " just numbers (0000): ");
-            while (!scanner.hasNextInt())
-            {
-                System.out
-                    .println("Invalid type, please enter a whole number:");
+            if (!scanner.hasNextInt()) {
+                System.out.println(
+                    "Invalid choice. Please enter a number between 1 and 6.");
                 scanner.nextLine();
+                continue;
             }
-            int arrivalTimeTest = scanner.nextInt();
-            if (Integer.toString(arrivalTimeTest).length() == 4
-                && checkArrivalTimeValidity(arrivalTimeTest))
-            {
-                arrivalTime = arrivalTimeTest;
-                break;
+
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Clear scanner buffer
+
+            switch (choice) {
+                case 1:
+                    addPartyPrompt(scanner, waitlist, tableManager);
+                    break;
+                case 2:
+                    System.out.println("\nCurrent Waitlist:");
+                    waitlist.displayWaitlist();
+                    break;
+                case 3:
+                    seatPartyPrompt(waitlist, tableManager);
+                    break;
+                case 4:
+                    removePartyPrompt(scanner, waitlist);
+                    break;
+                case 5:
+                    checkWaitTimePrompt(scanner, waitlist, tableManager);
+                    break;
+                case 6:
+                    running = false;
+                    System.out.println("Exiting system. Goodbye!");
+                    break;
+                default:
+                    System.out.println(
+                        "Invalid option. Please choose between 1 and 6.");
             }
-            System.out.println(
-                "Invalid arrival time. Please enter exactly 4 digits (0000)"
-                    + " or check if the time entered is in operating hours:");
         }
-        System.out.println("arrival time:  " + arrivalTime);
-        
-        Party party = new Party(partyName,arrivalTime,amountInParty);
-        waitlist.addParty(party);
-        System.out.println();
-        System.out.println("Party added to waitlist:");
-        System.out.println("Party Name: " + party.getName());
-        System.out.println("Amount in Party: " + party.getSize());
-        System.out.println("Arrival Time: " + party.getArrivalTime());
-        System.out.println("Table Type: " + enteredVal);
 
-        System.out.println();
-        System.out.println("Current Waitlist:");
-        waitlist.displayWaitlist();
         scanner.close();
-        
+    }
 
+    // ~ Private Helper Methods ................................................
+
+
+    /**
+     * Displays individual open/total trackers for Booths, Window, and Regular
+     * tables.
+     *
+     * @param tableManager
+     *            manager tracking table availability
+     */
+    private static void displayTableStatus(TableManager tableManager) {
+        int openBooths = tableManager.getAvailableCountByType("booth");
+        int totalBooths = tableManager.getTotalCountByType("booth");
+
+        int openWindow = tableManager.getAvailableCountByType("window");
+        int totalWindow = tableManager.getTotalCountByType("window");
+
+        int openRegular = tableManager.getAvailableCountByType("regular");
+        int totalRegular = tableManager.getTotalCountByType("regular");
+
+        System.out.println("--- Table Availability ---");
+        System.out.println("Booths:  " + openBooths + "/" + totalBooths
+            + " open");
+        System.out.println("Window:  " + openWindow + "/" + totalWindow
+            + " open");
+        System.out.println("Regular: " + openRegular + "/" + totalRegular
+            + " open");
+        System.out.println("Total:   " + tableManager.getAvailableTableCount()
+            + "/" + tableManager.getTotalTableCount() + " open");
     }
 
 
-    // ~Public Methods ........................................................
-   
+    /**
+     * Prompts the user to enter party details, party size, table preference,
+     * and arrival time,
+     * then adds them to the waitlist and reports their dynamic wait time based
+     * on table availability.
+     *
+     * @param scanner
+     *            active Scanner object for console input
+     * @param waitlist
+     *            waitlist instance to add the party to
+     * @param tableManager
+     *            table manager tracking availability
+     */
+    private static void addPartyPrompt(
+        Scanner scanner,
+        Waitlist waitlist,
+        TableManager tableManager) {
+        System.out.print("Please enter the name of the party: ");
+        String partyName = scanner.nextLine().trim();
 
+        int amountInParty = 0;
+        while (true) {
+            System.out.print("Please enter amount of people in party (1-"
+                + MAX_PARTY_SIZE + "): ");
+            if (scanner.hasNextInt()) {
+                amountInParty = scanner.nextInt();
+                scanner.nextLine();
 
-    private static boolean checkArrivalTimeValidity(int arrivalTime)
-    {
-        if (800 <= arrivalTime && arrivalTime < 2200)
-        {
-            int arrivalMinute = arrivalTime % 100;
-            if (arrivalMinute >= 0 && arrivalMinute < 60)
-            {
-                return true;
+                if (amountInParty > 0 && amountInParty <= MAX_PARTY_SIZE) {
+                    break;
+                }
+                System.out.println(
+                    "Party size exceeds maximum seat capacity of "
+                        + MAX_PARTY_SIZE + ".");
             }
+            else {
+                System.out.println(
+                    "Invalid input. Please enter a whole number.");
+                scanner.nextLine();
+            }
+        }
+
+        String tableType = "";
+        List<String> validTypes = Arrays.asList("booth", "window", "regular");
+        while (true) {
+            System.out.print(
+                "Please enter table type preference (booth, window, regular): ");
+            tableType = scanner.nextLine().trim().toLowerCase();
+
+            if (validTypes.contains(tableType)) {
+                break;
+            }
+            System.out.println(
+                "Invalid type. Choose from: booth, window, or regular.");
+        }
+
+        int arrivalTime = 0;
+        while (true) {
+            System.out.print(
+                "Please enter arrival time in military format (e.g., 0800-2159): ");
+            if (scanner.hasNextInt()) {
+                int inputTime = scanner.nextInt();
+                scanner.nextLine();
+
+                if (checkArrivalTimeValidity(inputTime)) {
+                    arrivalTime = inputTime;
+                    break;
+                }
+            }
+            else {
+                scanner.nextLine();
+            }
+            System.out.println(
+                "Invalid arrival time. Must be operating hours (0800 to 2159).");
+        }
+
+        Party party = new Party(partyName, arrivalTime, amountInParty,
+            tableType);
+        waitlist.addParty(party);
+
+        int calculatedWaitTime = waitlist.getWaitTime(party, tableManager);
+
+        System.out.println("\nSuccess: Party added to waitlist!");
+        if (calculatedWaitTime == 0) {
+            System.out.println("Estimated wait time for a " + tableType
+                + ": 0 minutes (Table currently available!).");
+        }
+        else {
+            System.out.println("Estimated wait time for a " + tableType + ": "
+                + calculatedWaitTime + " minutes.");
+        }
+    }
+
+
+    /**
+     * Seats the next party on the waitlist if an appropriate table matching
+     * their size
+     * and preference is currently available.
+     *
+     * @param waitlist
+     *            waitlist instance managing active parties
+     * @param tableManager
+     *            table manager instance tracking restaurant tables
+     */
+    private static void seatPartyPrompt(
+        Waitlist waitlist,
+        TableManager tableManager) {
+        if (waitlist.isEmpty()) {
+            System.out.println("No parties currently on the waitlist.");
+            return;
+        }
+
+        Party next = waitlist.seatNextParty();
+
+        if (tableManager.assignTable(next.getSize(), next.getTableType())) {
+            System.out.println("Seated party '" + next.getName() + "' at a "
+                + next.getTableType() + " table (Size: " + next.getSize()
+                + ").");
+        }
+        else {
+            System.out.println("No available " + next.getTableType()
+                + " table for party size " + next.getSize()
+                + ". Re-adding to waitlist.");
+            waitlist.addParty(next);
+        }
+    }
+
+
+    /**
+     * Prompts user for a party name to remove directly from the waitlist
+     * without seating them.
+     *
+     * @param scanner
+     *            active Scanner object for console input
+     * @param waitlist
+     *            waitlist instance to remove party from
+     */
+    private static void removePartyPrompt(Scanner scanner, Waitlist waitlist) {
+        if (waitlist.isEmpty()) {
+            System.out.println("The waitlist is currently empty.");
+            return;
+        }
+
+        System.out.print("Enter the name of the party to remove: ");
+        String partyName = scanner.nextLine().trim();
+
+        boolean removed = waitlist.removeParty(partyName);
+
+        if (removed) {
+            System.out.println("Party '" + partyName
+                + "' was successfully removed from the waitlist.");
+        }
+        else {
+            System.out.println("Party '" + partyName
+                + "' was not found on the waitlist.");
+        }
+    }
+
+
+    /**
+     * Prompts the user for a party name and displays their current estimated
+     * wait time
+     * based on preceding parties seeking the same table type and current open
+     * tables.
+     *
+     * @param scanner
+     *            active Scanner object for console input
+     * @param waitlist
+     *            waitlist instance containing active parties
+     * @param tableManager
+     *            table manager tracking available tables
+     */
+    private static void checkWaitTimePrompt(
+        Scanner scanner,
+        Waitlist waitlist,
+        TableManager tableManager) {
+        if (waitlist.isEmpty()) {
+            System.out.println("The waitlist is currently empty.");
+            return;
+        }
+
+        System.out.print("Enter the name of the party to check wait time: ");
+        String partyName = scanner.nextLine().trim();
+
+        Party party = waitlist.getPartyByName(partyName);
+
+        if (party != null) {
+            int waitTime = waitlist.getWaitTime(party, tableManager);
+            System.out.println("Party '" + party.getName() + "' (" + party
+                .getTableType() + ") has an estimated wait time of " + waitTime
+                + " minutes.");
+        }
+        else {
+            System.out.println("Party '" + partyName
+                + "' was not found on the waitlist.");
+        }
+    }
+
+
+    /**
+     * Creates and populates initial restaurant tables with separate booth,
+     * window, and regular counts.
+     *
+     * @return initialized TableManager instance with populated tables
+     */
+    private static TableManager initializeRestaurantLayout() {
+        TableManager manager = new TableManager();
+
+        // Add Booth tables (IDs 1-5, capacity 4)
+        for (int i = 1; i <= MAX_BOOTHS; i++) {
+            manager.addTable(new BoothTable(i, 4));
+        }
+
+        // Add Window tables (IDs 6-10, capacity 6)
+        for (int i = 6; i <= 5 + MAX_WINDOW_TABLES; i++) {
+            manager.addTable(new WindowTable(i, 6));
+        }
+
+        // Add Regular tables (IDs 11-15, capacity 8)
+        for (int i = 11; i <= 10 + MAX_REGULAR_TABLES; i++) {
+            manager.addTable(new Table(i, 8));
+        }
+
+        return manager;
+    }
+
+
+    /**
+     * Validates if arrival military time is within restaurant operating hours
+     * (0800 to 2159).
+     *
+     * @param arrivalTime
+     *            integer representation of 4-digit military time
+     * @return true if time is valid and within range, false otherwise
+     */
+    private static boolean checkArrivalTimeValidity(int arrivalTime) {
+        if (800 <= arrivalTime && arrivalTime < 2200) {
+            int arrivalMinute = arrivalTime % 100;
+            return arrivalMinute >= 0 && arrivalMinute < 60;
         }
         return false;
     }
-
 }

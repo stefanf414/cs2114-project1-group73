@@ -1,119 +1,166 @@
 package mainClass;
-// -------------------------------------------------------------------------
+
 /**
- * This is the party class, where each restaurant party gives name, size, and
- * table preference
- * 
+ * Represents a restaurant party with a name, arrival time, size, and table type
+ * preference.
+ * Implements {@link Comparable} to allow sorting parties chronologically by
+ * arrival time.
+ *
  * @author Samuel
- * @version Sep 14, 2026
+ * @author Noah Bierman
+ * @version 2026.09.20
  */
-public class Party
-{
+public class Party implements Comparable<Party> {
     // ~ Fields ................................................................
+
+    /** The name of the party making the reservation or on the waitlist. */
     private String name;
+
+    /**
+     * The arrival time of the party stored in 4-digit military time format
+     * (e.g., 1830).
+     */
     private int arrivalTime;
+
+    /** The total number of guests in the party. */
     private int size;
 
-    // ----------------------------------------------------------
     /**
-     * Create a new Party object.
-     * 
-     * @param name
-     *            The name of the party
-     * @param arrivalTime
-     *            The arrival of the party (Military time)
-     * @param size
-     *            How many people are in the party
+     * The preferred table type for the party: "booth", "window", or "regular".
      */
+    private String tableType;
+
     // ~ Constructors ..........................................................
-    public Party(String name, int arrivalTime, int size)
-    {
+
+    /**
+     * Creates a new Party object with specified details and table preference.
+     *
+     * @param name
+     *            the name of the party making the reservation
+     * @param arrivalTime
+     *            the arrival time in 4-digit military format (e.g., 1900)
+     * @param size
+     *            the number of guests in the party
+     * @param tableType
+     *            the preferred table type ("booth", "window", "regular")
+     */
+    public Party(String name, int arrivalTime, int size, String tableType) {
         this.name = name;
         this.arrivalTime = arrivalTime;
         this.size = size;
+        this.tableType = tableType.toLowerCase();
     }
 
+    // ~ Public Methods ........................................................
 
-    // ----------------------------------------------------------
+
     /**
-     * Getter for the party name
-     * 
-     * @return Name of the party
+     * Gets the party name.
+     *
+     * @return the party name
      */
-    // ~Public Methods ........................................................
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
 
-    // ----------------------------------------------------------
     /**
-     * Setter for the party name
-     * 
+     * Sets the party name.
+     *
      * @param name
-     *            New name for the party
+     *            the new party name
      */
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
 
-    // ----------------------------------------------------------
     /**
-     * Getter for the Party's arrival time
-     * 
-     * @return arrival time of the party
+     * Gets the party's arrival time.
+     *
+     * @return the arrival time in military time
      */
-    public int getArrivalTime()
-    {
+    public int getArrivalTime() {
         return arrivalTime;
     }
 
 
-    // ----------------------------------------------------------
     /**
-     * Setter for the arrival time
-     * 
+     * Sets the party's arrival time.
+     *
      * @param arrivalTime
+     *            the new arrival time in military time
      */
-    public void setArrivalTime(int arrivalTime)
-    {
+    public void setArrivalTime(int arrivalTime) {
         this.arrivalTime = arrivalTime;
     }
 
 
-    // ----------------------------------------------------------
     /**
-     * Getter for the int size
-     * 
-     * @return size of the group
+     * Gets the party size.
+     *
+     * @return the number of guests in the party
      */
-    public int getSize()
-    {
+    public int getSize() {
         return size;
     }
 
 
-    // ----------------------------------------------------------
     /**
-     * Setter for the int size
-     * 
+     * Sets the size of the party.
+     *
      * @param size
-     *            Size of the new group
+     *            the new party size
      */
-    public void setSize(int size)
-    {
+    public void setSize(int size) {
         this.size = size;
     }
 
 
-    public String toString()
-    {
-        return "The party for " + getName() + " coming at  " + getArrivalTime()
-            + " has " + getSize() + " people.";
+    /**
+     * Gets the party's table preference.
+     *
+     * @return table preference type
+     */
+    public String getTableType() {
+        return tableType;
     }
-    
 
+
+    /**
+     * Sets the party's table preference.
+     *
+     * @param tableType
+     *            table preference type ("booth", "window", "regular")
+     */
+    public void setTableType(String tableType) {
+        this.tableType = tableType.toLowerCase();
+    }
+
+
+    /**
+     * Compares this party with another party based on arrival time.
+     *
+     * @param other
+     *            the other party to compare to
+     * @return a negative integer, zero, or a positive integer as this party's
+     *         arrival time is less than, equal to, or greater than the
+     *         specified party's
+     */
+    @Override
+    public int compareTo(Party other) {
+        return Integer.compare(this.arrivalTime, other.arrivalTime);
+    }
+
+
+    /**
+     * Returns a string representation of the party.
+     *
+     * @return a formatted string with party details
+     */
+    @Override
+    public String toString() {
+        return "The party for " + getName() + " coming at " + getArrivalTime()
+            + " has " + getSize() + " people (" + getTableType() + ").";
+    }
 }
