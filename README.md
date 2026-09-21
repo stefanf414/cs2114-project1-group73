@@ -1,5 +1,6 @@
 # cs2114-project1-group73
-Restaurant Suite for waitlists and table management
-Create a new javaproject in eclipse.
-Download the src/mainClass Folder 
-replace the src file with the src/mainClass or add the files into the default src folder
+Restaurant Suite for waitlists and table management.
+1. Create a new javaproject in eclipse. \n
+2. Download the src/mainClass Folder \n
+3. replace the blank src file with the src/mainClass folder or add the files into the default src folder under the mainClass package \n
+4. run the main.java file and interact directly with the console
