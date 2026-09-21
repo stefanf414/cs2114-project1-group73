@@ -1,5 +1,3 @@
 # cs2114-project1-group73
-Restaurant suite for waitlists and reservations
-Stefan Fernandez edit here
-Megha Dabbeeru edited here
-Noah Bierman
+Restaurant Suite for waitlists and table management
+Download the mainClass folder 
